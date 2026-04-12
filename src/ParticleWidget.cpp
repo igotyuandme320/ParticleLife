@@ -126,8 +126,6 @@ void ParticleWidget::updatePhysics()
     const int   n     = static_cast<int>(m_particles.size());
     const float W     = static_cast<float>(width());
     const float H     = static_cast<float>(height());
-    const float halfW = W * 0.5f;
-    const float halfH = H * 0.5f;
     const float r2max = m_rMax * m_rMax;
 
     std::vector<float> fx(n, 0.0f), fy(n, 0.0f);
@@ -140,14 +138,8 @@ void ParticleWidget::updatePhysics()
         for (int j = 0; j < n; ++j) {
             if (i == j) continue;
 
-            float dx = m_particles[j].x - xi;
-            float dy = m_particles[j].y - yi;
-
-            // Toroidal shortest-path
-            if (dx >  halfW) dx -= W;
-            if (dx < -halfW) dx += W;
-            if (dy >  halfH) dy -= H;
-            if (dy < -halfH) dy += H;
+            const float dx = m_particles[j].x - xi;
+            const float dy = m_particles[j].y - yi;
 
             const float r2 = dx * dx + dy * dy;
             if (r2 <= 0.0f || r2 >= r2max) continue;
@@ -170,10 +162,21 @@ void ParticleWidget::updatePhysics()
         m_particles[i].x += m_particles[i].vx;
         m_particles[i].y += m_particles[i].vy;
 
-        if (m_particles[i].x <  0.0f) m_particles[i].x += W;
-        if (m_particles[i].x >= W)    m_particles[i].x -= W;
-        if (m_particles[i].y <  0.0f) m_particles[i].y += H;
-        if (m_particles[i].y >= H)    m_particles[i].y -= H;
+        // Elastic bounce off walls
+        if (m_particles[i].x < 0.0f) {
+            m_particles[i].x  = 0.0f;
+            m_particles[i].vx = std::fabs(m_particles[i].vx);
+        } else if (m_particles[i].x >= W) {
+            m_particles[i].x  = W - 1.0f;
+            m_particles[i].vx = -std::fabs(m_particles[i].vx);
+        }
+        if (m_particles[i].y < 0.0f) {
+            m_particles[i].y  = 0.0f;
+            m_particles[i].vy = std::fabs(m_particles[i].vy);
+        } else if (m_particles[i].y >= H) {
+            m_particles[i].y  = H - 1.0f;
+            m_particles[i].vy = -std::fabs(m_particles[i].vy);
+        }
     }
 }
 
