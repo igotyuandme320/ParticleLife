@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_ParticleLife_FILE /Users/igotuandme/ParticleLife/build/ParticleLife.app/Contents/MacOS/ParticleLife)
+set(__QT_DEPLOY_TARGET_ParticleLife_TYPE EXECUTABLE)
