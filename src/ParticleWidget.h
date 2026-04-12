@@ -11,8 +11,24 @@ class ParticleWidget : public QWidget {
 public:
     explicit ParticleWidget(QWidget *parent = nullptr);
 
-    // Exposed so MainWindow can display them
-    const float (&matrix() const)[4][4] { return m_matrix; }
+    // ── Getters (for ControlPanel to read initial state) ──────────────────
+    float matrixValue(int i, int j) const { return m_matrix[i][j]; }
+    bool  isPaused()      const { return !m_timer->isActive(); }
+    int   particleCount() const { return m_numParticles; }
+    float rMax()          const { return m_rMax; }
+    float friction()      const { return m_friction; }
+
+signals:
+    void matrixRandomized(); // emitted after randomizeRules()
+
+public slots:
+    void setParticleCount(int n);
+    void setRMax(float r);
+    void setFriction(float f);
+    void setMatrixValue(int i, int j, float v);
+    void randomizeRules();   // new random matrix, then emits matrixRandomized()
+    void resetParticles();   // scatter particles, keep current rules
+    void togglePause();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -26,17 +42,17 @@ private:
     void updatePhysics();
 
     std::vector<Particle> m_particles;
-    float m_matrix[4][4]; // m_matrix[i][j]: force color-i exerts on color-j
-                          // positive = attract, negative = repel
-
+    float  m_matrix[4][4];
     QTimer *m_timer;
 
-    // ── Simulation constants ──────────────────────────────────────────────
-    static constexpr int   NUM_PARTICLES = 500;
-    static constexpr int   NUM_COLORS    = 4;
-    static constexpr float R_MAX         = 80.0f;  // interaction radius (px)
-    static constexpr float BETA          = 0.3f;   // inner repulsion zone (fraction of R_MAX)
-    static constexpr float FRICTION      = 0.5f;   // velocity retention per tick
-    static constexpr float FORCE_SCALE   = 0.4f;   // scales raw force → px/tick²
-    static constexpr int   PARTICLE_R    = 3;       // draw radius (px)
+    // ── Runtime-settable simulation parameters ────────────────────────────
+    int   m_numParticles = 500;
+    float m_rMax         = 80.0f;
+    float m_friction     = 0.5f;
+
+    // ── Fixed constants ───────────────────────────────────────────────────
+    static constexpr int   NUM_COLORS  = 4;
+    static constexpr float BETA        = 0.3f;  // inner repulsion zone fraction
+    static constexpr float FORCE_SCALE = 0.4f;  // raw force → px/tick²
+    static constexpr int   PARTICLE_R  = 3;     // draw radius (px)
 };

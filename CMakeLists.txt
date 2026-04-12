@@ -16,12 +16,14 @@ set(SOURCES
     src/main.cpp
     src/MainWindow.cpp
     src/ParticleWidget.cpp
+    src/ControlPanel.cpp
     src/Particle.cpp
 )
 
 set(HEADERS
     src/MainWindow.h
     src/ParticleWidget.h
+    src/ControlPanel.h
     src/Particle.h
 )
 

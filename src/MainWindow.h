@@ -3,6 +3,7 @@
 #include <QMainWindow>
 
 class ParticleWidget;
+class ControlPanel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -12,4 +13,5 @@ public:
 
 private:
     ParticleWidget *m_particleWidget;
+    ControlPanel   *m_controlPanel;
 };
