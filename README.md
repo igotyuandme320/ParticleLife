@@ -13,7 +13,6 @@
 ### Windows
 
 - Visual Studio 2022 with `Desktop development with C++`
-- CMake 3.20+
 - Qt 6 `msvc2022_64` installed to the default `C:\Qt\...` location, or `QT_ROOT` / `QTDIR` pointing at that kit
 - VSCode with the recommended extensions in `.vscode/extensions.json` if you want the editor workflow
 
@@ -37,6 +36,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run-windows.ps1
 
 That script:
 
+- locates CMake from `PATH`, a normal CMake install, or Visual Studio's bundled CMake
 - locates Qt from `QT_ROOT`, `QTDIR`, or `C:\Qt\*\msvc2022_64`
 - configures with the `windows-msvc` preset
 - builds the app

@@ -7,15 +7,38 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-function Require-Command {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-
-    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
-        throw "Required command '$Name' was not found in PATH."
+function Resolve-CMake {
+    $command = Get-Command cmake -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Source
     }
+
+    foreach ($candidate in @(
+        "C:\Program Files\CMake\bin\cmake.exe",
+        "C:\Program Files (x86)\CMake\bin\cmake.exe"
+    )) {
+        if (Test-Path $candidate) {
+            return $candidate
+        }
+    }
+
+    $vswhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+    if (Test-Path $vswhere) {
+        $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        if ($vsInstallPath) {
+            foreach ($relativePath in @(
+                "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe",
+                "Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\cmake.exe"
+            )) {
+                $candidate = Join-Path $vsInstallPath.Trim() $relativePath
+                if (Test-Path $candidate) {
+                    return $candidate
+                }
+            }
+        }
+    }
+
+    throw "CMake was not found. Install CMake, or install Visual Studio 2022 with Desktop development with C++."
 }
 
 function Resolve-QtRoot {
@@ -53,16 +76,16 @@ function Resolve-QtRoot {
     throw "Qt 6 for MSVC was not found. Install Qt 6 msvc2022_64 to C:\Qt or set QT_ROOT."
 }
 
-Require-Command -Name "cmake"
-
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$cmakeExe = Resolve-CMake
 $qtRoot = Resolve-QtRoot
 $buildPreset = if ($Config -eq "Release") { "windows-release" } else { "windows-debug" }
 $exePath = Join-Path $repoRoot "build\windows-msvc\$Config\ParticleLife.exe"
 
+Write-Host "Using CMake from $cmakeExe"
 Write-Host "Using Qt from $qtRoot"
-cmake --preset windows-msvc "-DCMAKE_PREFIX_PATH=$qtRoot"
-cmake --build --preset $buildPreset
+& $cmakeExe --preset windows-msvc "-DCMAKE_PREFIX_PATH=$qtRoot"
+& $cmakeExe --build --preset $buildPreset
 
 if (-not (Test-Path $exePath)) {
     throw "Build completed, but '$exePath' was not produced."
