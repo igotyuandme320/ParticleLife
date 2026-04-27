@@ -1,6 +1,11 @@
 build/
+build-*/
+cmake-build-*/
 .DS_Store
 *.o
 *.a
 *.app
 CMakeFiles/
+CMakeCache.txt
+.vs/
+*.vcxproj.user
